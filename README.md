@@ -38,4 +38,4 @@ Once the .pdbqt formats for both the ligand and receptor are automatically gener
 In the folder where you run the container and where the input data resides, an 'output' folder will be generated. In it, you'll find a .zip file containing files for both the receptor and ligand in .pdbqt format, as well as the docking result as output.pdbqt.
 
 ### Analysis
-Using the Vina forcefield, you should obtain an output.pdbqt with the best ligand docking score -13 kcal/mol. The first ligand structure in the output.pdbqt file should correspond to the best score. The output.pdbqt file can be visualized using Pymol tool (for both - output.pdbqt and receptor.pdbqt together), or you can also open it using AutoDockTools.
+Using the Vina forcefield, you should obtain an output.pdbqt with the best ligand docking score in term of negative binding affinity (kcal/mol). The first ligand structure in the output.pdbqt file should correspond to the best score. The output.pdbqt file can be visualized using Pymol tool (for both - output.pdbqt and receptor.pdbqt together), or you can also open it using AutoDockTools.
