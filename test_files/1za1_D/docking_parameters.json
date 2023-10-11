@@ -1,0 +1,17 @@
+{
+  "receptor": "1za1_D.pdb",
+  "ligand": "CTP_ideal.sdf",
+  "output": "output.pdbqt",
+  "center": {
+    "x": 17.0,
+    "y": 86.0,
+    "z": 33.0
+  },
+  "size": {
+    "x": 35.0,
+    "y": 35.0,
+    "z": 35.0
+  }
+}
+
+  

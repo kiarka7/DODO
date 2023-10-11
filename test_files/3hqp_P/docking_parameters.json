@@ -1,0 +1,17 @@
+{
+  "receptor": "3hqp_P.pdb",
+  "ligand": "atp_isomeric.smi",
+  "output": "output.pdbqt",
+  "center": {
+    "x": 10.0,
+    "y": 1.0,
+    "z": -50.0
+  },
+  "size": {
+    "x": 30.0,
+    "y": 30.0,
+    "z": 30.0
+  }
+}
+
+  
