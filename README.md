@@ -5,9 +5,6 @@ We use AutoDock Vina software - O. Trott, A. J. Olson, AutoDock Vina: improving 
 
 The code for cantainer was prepared by Kamila Riedlová with the support of ChatGPT-4. After using this service, the author reviewed and edited the content as needed and take full responsibility for the content.
 
-## Clone the repository 
-git clone https://github.com/kiarka7/Docking
-
 ## Data for docking
 Please upload the files (receptor and ligand) for which you wish to run the docking to the folder on your computer where you have the downloaded Dockerfile. In the Dockerfile, only modify the receptor and ligand names on these lines: 
     COPY receptor.pdb /data/
