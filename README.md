@@ -13,25 +13,8 @@ Please upload the files (receptor and ligand) for which you wish to run the dock
     COPY ligand.smi /data/
 
 Furthermore, adjust the .json file for the receptor name, ligand, and also input the center and size parameters of the search space. 
-    The center and size parameters define the search space for docking. Center_x,y,z parameters specify the x, y, and z coordinates of the search space's center. Ideally, this should be as close as possible to the expected interaction site between the ligand and receptor. If you are uncertain, you can open the receptor_file in the VMD program and find suitable pocket coordinates manually. 
-    
-        For example:
-        
-            "x": 40.0
-            
-            "y": 30.0
-            
-            "z": 7.0
-            
-    Size x, y, z determine the width, height, and depth of the search space. The search space should cover all possible interactions between the ligand and receptor but should also be small enough to minimize computational cost. Search space dimensions should be positive.
-    
-        For example:
-        
-            "x": 40.0
-            
-            "y": 40.0
-            
-            "z": 40.0
+    The center and size parameters define the search space for docking. Center_x,y,z parameters specify the x, y, and z coordinates of the search space's center. Ideally, this should be as close as possible to the expected interaction site between the ligand and receptor. If you are uncertain, you can open the receptor_file in the VMD program and find suitable pocket coordinates manually. For example: "x": 40.0, "y": 30.0, "z": 7.0.
+    Size x, y, z determine the width, height, and depth of the search space. The search space should cover all possible interactions between the ligand and receptor but should also be small enough to minimize computational cost. Search space dimensions should be positive. For example: "x": 40.0, "y": 40.0, "z": 40.0.
 
 ## Build the container in the docking folder with the following commands: 
 docker build -t name_of_image:1.0 .
@@ -40,10 +23,10 @@ docker build -t name_of_image:1.0 .
     
 docker run -it --name name_of_container -v /home/username/your_folder/docking_folder:/data name_of_image:1.0 /bin/bash
 
-    # For example: docker run -it --name docking-container -v /home/kamila/projects/docking:/data docking:1.0 /bin/bash
+    # For example: docker run -it --name docking-container -v /home/kiarka7/projects/docking:/data docking:1.0 /bin/bash
 
 ### Ligand Preparation
- Acceptable formats for the ligand are SMILES (.smi), .mol2, .sdf, and .pdb. The script will automatically convert the .smi, .mol2, .sdf format to .pdb. If your ligand is already in the .pdb format, then use that. Subsequently, the .pdb file is converted to .pdbqt using Autodock Tools' prepare_ligand4.py. 
+Acceptable formats for the ligand are SMILES (.smi), .mol2, .sdf, and .pdb. The script will automatically convert the .smi, .mol2, .sdf format to .pdb. If your ligand is already in the .pdb format, then use that. Subsequently, the .pdb file is converted to .pdbqt using Autodock Tools' prepare_ligand4.py. 
 
 ### Receptor Preparation
 Acceptable format for the receptor is .pdb. The receptor is prepared using Autodock Tools' prepare_receptor4.py. Currently, it's not possible to upload a receptor that contains atoms other than amino acids, especially crystal waters, ions, and compounds assisting crystallization. 
