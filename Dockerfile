@@ -57,8 +57,8 @@ ENV PYTHONPATH /opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs
 WORKDIR /app
 
 COPY docking_parameters.json /app/ 
-COPY rep_new.pdb /data/
-COPY atp_ideal.pdb /data/
+COPY receptor.pdb /data/
+COPY ligand.pdb /data/
 COPY run_all.sh /app/
 COPY run_docking.py /app/ 
 COPY README.md /app/
