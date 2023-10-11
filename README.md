@@ -1,16 +1,14 @@
 This repository provides tools to perform docking simulations with Autodock Vina for basic docking in a docking container. That means docking one ligand to a rigid receptor.
 
-### Docking Container
+## Docking Container
 We use AutoDock Vina software - O. Trott, A. J. Olson, AutoDock Vina: improving the speed and accuracy of docking, with a new scoring function, efficient optimization and multithreading, Journal of Computational Chemistry 31 (2010), 455-461, DOI 10.1002/jcc.21334.
 
 The code for cantainer was prepared by Kamila Riedlová with the support of ChatGPT-4. After using this service, the author reviewed and edited the content as needed and take full responsibility for the content.
 
-### Building the Docker Container
+## Clone the repository 
+git clone https://github.com/kiarka7/Docking
 
-# Clone the repository 
-git clone [repository URL]
-
-# Data for docking
+## Data for docking
 Please upload the files (receptor and ligand) for which you wish to run the docking to the folder on your computer where you have the downloaded Dockerfile. In the Dockerfile, only modify the receptor and ligand names on these lines: 
     COPY receptor.pdb /data/
     COPY ligand.smi /data/
@@ -27,7 +25,7 @@ Furthermore, adjust the .json file for the receptor name, ligand, and also input
             "y": 40.0
             "z": 40.0
 
-# Build the container in the docking folder with the following commands: 
+## Build the container in the docking folder with the following commands: 
 docker build -t name_of_image:1.0 .
     # For example: docker build -t docking:1.0 .
 docker run -it --name name_of_container -v /home/username/your_folder/docking_folder:/data name_of_image:1.0 /bin/bash
