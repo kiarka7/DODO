@@ -1,6 +1,6 @@
 {
-  "receptor": "rep_new.pdb",
-  "ligand": "atp_ideal.pdb",
+  "receptor": "receptor.pdb",
+  "ligand": "ligand.pdb",
   "output": "output.pdbqt",
   "center": {
     "x": 40.0,
