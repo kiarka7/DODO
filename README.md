@@ -7,25 +7,39 @@ The code for cantainer was prepared by Kamila Riedlová with the support of Chat
 
 ## Data for docking
 Please upload the files (receptor and ligand) for which you wish to run the docking to the folder on your computer where you have the downloaded Dockerfile. In the Dockerfile, only modify the receptor and ligand names on these lines: 
+
     COPY receptor.pdb /data/
+    
     COPY ligand.smi /data/
 
 Furthermore, adjust the .json file for the receptor name, ligand, and also input the center and size parameters of the search space. 
     The center and size parameters define the search space for docking. Center_x,y,z parameters specify the x, y, and z coordinates of the search space's center. Ideally, this should be as close as possible to the expected interaction site between the ligand and receptor. If you are uncertain, you can open the receptor_file in the VMD program and find suitable pocket coordinates manually. 
+    
         For example:
+        
             "x": 40.0
+            
             "y": 30.0
+            
             "z": 7.0
+            
     Size x, y, z determine the width, height, and depth of the search space. The search space should cover all possible interactions between the ligand and receptor but should also be small enough to minimize computational cost. Search space dimensions should be positive.
+    
         For example:
+        
             "x": 40.0
+            
             "y": 40.0
+            
             "z": 40.0
 
 ## Build the container in the docking folder with the following commands: 
 docker build -t name_of_image:1.0 .
+
     # For example: docker build -t docking:1.0 .
+    
 docker run -it --name name_of_container -v /home/username/your_folder/docking_folder:/data name_of_image:1.0 /bin/bash
+
     # For example: docker run -it --name docking-container -v /home/kamila/projects/docking:/data docking:1.0 /bin/bash
 
 ### Ligand Preparation
