@@ -9,6 +9,14 @@ os.environ['PYTHONPATH'] = '/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs'
 
 MGLTOOLS_BIN_PATH = '/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/AutoDockTools/Utilities24/'
 
+def filter_pdb(input_pdb, output_pdb):
+    with open(input_pdb, 'r') as f_in, open(output_pdb, 'w') as f_out:
+        for line in f_in:
+            if line.startswith("ATOM"):
+                f_out.write(line)
+
+    print(f"Filtered PDB saved to {output_pdb}")
+
 def prepare_receptor(pdb_file, pdbqt_file):
     cmd = ["/usr/local/bin/python2.7", os.path.join(MGLTOOLS_BIN_PATH, 'prepare_receptor4.py'), '-r', pdb_file, '-o', pdbqt_file]
     subprocess.run(cmd)
@@ -79,6 +87,11 @@ def main(json_file):
 
     receptor = check_file_exists(receptor)
     ligand = check_file_exists(ligand)
+
+    # Convert receptor file to file with aminoacid sequence format only
+    filtered_receptor = receptor.replace(".pdb", "_filtered.pdb")
+    filter_pdb(receptor, filtered_receptor)
+    receptor = filtered_receptor
 
     # Convert receptor if it's not in pdbqt format
     base, ext = os.path.splitext(receptor)
