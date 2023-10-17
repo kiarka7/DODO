@@ -29,7 +29,7 @@ docker run -it --name name_of_container -v /home/username/your_folder/docking_fo
 Acceptable formats for the ligand are SMILES (.smi), .mol2, .sdf, and .pdb. The script will automatically convert the .smi, .mol2, .sdf format to .pdb. If your ligand is already in the .pdb format, then use that. Subsequently, the .pdb file is converted to .pdbqt using Autodock Tools' prepare_ligand4.py. 
 
 ### Receptor Preparation
-Acceptable format for the receptor is .pdb. The receptor is prepared using Autodock Tools' prepare_receptor4.py. Currently, it's not possible to upload a receptor that contains atoms other than amino acids, especially crystal waters, ions, and compounds assisting crystallization. 
+Acceptable format for the receptor is .pdb. The receptor is prepared using Autodock Tools' prepare_receptor4.py. Currently, it is possible to upload a receptor that contains atoms other than amino acids, especially crystal waters, ions, and compounds assisting crystallization. 
 
 ### Docking with AutoDock Vina
 Once the .pdbqt formats for both the ligand and receptor are automatically generated, docking will automatically commence on these structures. AutoDock Vina software is utilized for the docking, ref.: O. Trott, A. J. Olson, AutoDock Vina: improving the speed and accuracy of docking, with a new scoring function, efficient optimization and multithreading, Journal of Computational Chemistry 31 (2010), 455-461, DOI 10.1002/jcc.21334.
