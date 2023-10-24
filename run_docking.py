@@ -3,11 +3,14 @@ import subprocess
 import json
 import argparse
 import sys
+import zipfile ##### FIXED
+import shutil
 
 MGLTOOLS_LIB_PATH = '/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs'
 os.environ['PYTHONPATH'] = '/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs'
-
 MGLTOOLS_BIN_PATH = '/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/AutoDockTools/Utilities24/'
+DATA_PATH = "/data/" ##### FIXED
+WORK_DIR ="/tmp"
 
 def filter_pdb(input_pdb, output_pdb):
     with open(input_pdb, 'r') as f_in, open(output_pdb, 'w') as f_out:
@@ -24,7 +27,7 @@ def prepare_receptor(pdb_file, pdbqt_file):
 def prepare_ligand(input_file, output_file):
     cmd = ["/usr/local/bin/python2.7", os.path.join(MGLTOOLS_BIN_PATH, 'prepare_ligand4.py'), '-l', input_file, '-o', output_file]
     current_directory = os.getcwd()
-    os.chdir('/data')
+    os.chdir(WORK_DIR) ####FIXED
     try:
         subprocess.run(cmd, check=True)
     finally:
@@ -32,6 +35,7 @@ def prepare_ligand(input_file, output_file):
 
 def convert_to_pdb(input_file, output_file):
     _, ext = os.path.splitext(input_file)
+    ##### FIX
     if ext.lower() == '.smi':
         input_format = 'smi'
     elif ext.lower() == '.mol2':
@@ -45,7 +49,6 @@ def convert_to_pdb(input_file, output_file):
     cmd = ["obabel", "-i", input_format, input_file, "-o", "pdb", "-O", output_file, "--gen3d"]
     subprocess.run(cmd, check=True)
 
-DATA_PATH = "/data/"
 
 def read_json(json_file):
     with open(json_file, 'r') as f:
@@ -53,7 +56,7 @@ def read_json(json_file):
     
     receptor = os.path.join(DATA_PATH, data["receptor"])
     ligand = os.path.join(DATA_PATH, data["ligand"])
-    output = os.path.join(DATA_PATH, data["output"])
+    output = os.path.join(WORK_DIR, data["output"])
     
     center_x = data["center"]["x"]
     center_y = data["center"]["y"]
@@ -65,15 +68,10 @@ def read_json(json_file):
     
     return receptor, ligand, output, center_x, center_y, center_z, size_x, size_y, size_z
 
-os.makedirs("/data/output", exist_ok=True)
-os.chmod("/data/output", 0o777)
-
 def check_file_exists(filename):
     if not os.path.exists(filename):
         raise FileNotFoundError(f"File {filename} not found!")
     return filename
-
-import zipfile
 
 def create_zip(output_folder, files, zip_filename):
     with zipfile.ZipFile(zip_filename, 'w') as zipf:
@@ -83,17 +81,25 @@ def create_zip(output_folder, files, zip_filename):
 
 
 def main(json_file):
+
+    ###FIXED? ... os.makedirs(output_folder, exist_ok=True)
+    os.makedirs("/data/output", exist_ok=True)
+    os.chmod("/data/output", 0o777)
+
     receptor, ligand, output, center_x, center_y, center_z, size_x, size_y, size_z = read_json(json_file)
 
     receptor = check_file_exists(receptor)
     ligand = check_file_exists(ligand)
 
     # Convert receptor file to file with aminoacid sequence format only
-    filtered_receptor = receptor.replace(".pdb", "_filtered.pdb")
-    filter_pdb(receptor, filtered_receptor)
-    receptor = filtered_receptor
+    _, tail = os.path.split(receptor)
+    receptor_aux = f'{WORK_DIR}/{tail}'
+    shutil.copy2(receptor, receptor_aux)
+    filtered_receptor = receptor_aux.replace(".pdb", "_filtered.pdb")
+    filter_pdb(receptor_aux, filtered_receptor) 
+    receptor = filtered_receptor ### FIX
 
-    # Convert receptor if it's not in pdbqt format
+    # Convert receptor if it's not in pdbqt format   ####FIX? before we worked with it as if was pdb file for sure
     base, ext = os.path.splitext(receptor)
     if ext.lower() == '.pdb':
         receptor_pdbqt = os.path.abspath(base + '.pdbqt')
@@ -102,24 +108,23 @@ def main(json_file):
         receptor = receptor_pdbqt
 
     # Convert ligand if it's not in pdbqt format
+    ##### FIXED duplicities
     base, ext = os.path.splitext(ligand)
-    if ext.lower() == '.pdb':
-        ligand_pdbqt = os.path.abspath(base + '.pdbqt')
+    _, tail = os.path.split(ligand)
+    ext_lower = ext.lower()
+    if ext_lower in ['.smi', '.mol2', '.cif', '.sdf', '.pdb']:
+        if ext_lower != '.pdb':
+            ligand_pdb = os.path.join(WORK_DIR, tail.replace(ext, '.pdb'))
+            print(f"Converting {ligand} to {ligand_pdb} ...")
+            convert_to_pdb(ligand, ligand_pdb)
+            check_file_exists(ligand_pdb)
+        ligand_pdbqt = os.path.join(WORK_DIR, tail.replace(ext, '.pdbqt'))
+        #ligand_pdbqt = os.path.abspath(f'{WORK_DIR}{base}.pdbqt')
         print(f"Converting {ligand} to {ligand_pdbqt} ...")
-        prepare_ligand(ligand, ligand_pdbqt)
-        check_file_exists(ligand_pdbqt)
-        ligand = ligand_pdbqt
-    elif ext.lower() in ['.smi', '.mol2', '.cif', '.sdf']:
-        ligand_pdb = os.path.join('/data', base + '.pdb')
-        print(f"Converting {ligand} to {ligand_pdb} ...")
-        convert_to_pdb(ligand, ligand_pdb)
-        check_file_exists(ligand_pdb)
-        ligand_pdbqt = os.path.abspath(base + '.pdbqt')
-        print(f"Converting {ligand_pdb} to {ligand_pdbqt} ...")
         prepare_ligand(ligand_pdb, ligand_pdbqt)
         check_file_exists(ligand_pdbqt)
         ligand = ligand_pdbqt
-    elif ext.lower() != '.pdbqt':
+    elif ext_lower != '.pdbqt':
         raise ValueError("Unsupported ligand file format: " + ext)
     
     # Run AutoDock Vina
@@ -140,7 +145,7 @@ def main(json_file):
     output_folder = os.path.join(DATA_PATH, "output")
     os.makedirs(output_folder, exist_ok=True)
     zip_filename = os.path.join(output_folder, "results.zip")
-    files_to_zip = [output, receptor, ligand]  # přidán ligand do zipu
+    files_to_zip = [output, receptor, ligand]  # ligand added to gzip
     create_zip(output_folder, files_to_zip, zip_filename)
 
     print(f"Results saved to: {zip_filename}")

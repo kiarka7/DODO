@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python3 run_docking.py docking_parameters.json
+python3 run_docking.py /data/docking_parameters.json
