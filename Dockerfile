@@ -56,13 +56,13 @@ ENV PYTHONPATH /opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs
 
 WORKDIR /app
 
-COPY docking_parameters.json /app/ 
-COPY receptor.pdb /data/
-COPY ligand.pdb /data/
+#COPY docking_parameters.json /app/ 
+#COPY test_files/1za1_D/1za1_D.pdb /data/
+#COPY test_files/1za1_D/CTP_ideal.sdf /data/
 COPY run_all.sh /app/
 COPY run_docking.py /app/ 
-COPY README.md /app/
+#COPY README.md /app/
 
-RUN chmod +x /app/run_all.sh
+#RUN chmod +x /app/run_all.sh
 
-ENTRYPOINT ["/app/run_all.sh"]
+ENTRYPOINT ["sh", "/app/run_all.sh"]
