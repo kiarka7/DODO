@@ -50,5 +50,3 @@ Using the Vina forcefield, you should obtain an `output.pdbqt` with the best lig
 ## Acknowledgements
 
 - O. Trott, A. J. Olson, AutoDock Vina: improving the speed and accuracy of docking, with a new scoring function, efficient optimization and multithreading, Journal of Computational Chemistry 31 (2010), 455-461, [DOI: 10.1002/jcc.21334](https://doi.org/10.1002/jcc.21334).
-
-- The code for cantainer was prepared by Kamila Riedlová with the support of ChatGPT-4. After using this service, the author reviewed and edited the content as needed and take full responsibility for the content.
