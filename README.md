@@ -12,7 +12,7 @@ The name of the params file needs to be `docking_parameters.json`. It is a json 
 
 The _x_, _y_, and _z_ coordinates of the search space's center  should be as close as possible to the expected interaction site between the ligand and receptor. If you are uncertain, you can open the receptor_file in the [VMD](https://www.ks.uiuc.edu/Research/vmd/) or [PyMOL](https://pymol.org/2/) and find suitable pocket coordinates manually. The Size _x_, _y_, _z_ parameters determine the width, height, and depth of the search space. The search space should cover all possible interactions between the ligand and receptor but should also be small enough to minimize computational cost. Search space dimensions should be positive. 
 
-See an example of a para
+See an example of a params file in the test_files folder, eg 1za1_D.
 
 ### Running the continer 
 
