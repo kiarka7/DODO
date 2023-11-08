@@ -1,6 +1,7 @@
 FROM ubuntu:23.10
 
-ENV DEBIAN_FRONTEND=noninteractive
+# to prevent apt-get install from asking questions
+ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -51,17 +52,12 @@ RUN curl -L -o mgltools_x86_64Linux2_1.5.7p1.tar.gz https://ccsb.scripps.edu/mgl
     rm /opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs.tar.gz
 
 ENV PATH="/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/AutoDockTools/Utilities24/:${PATH}"
-
-ENV PYTHONPATH /opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs
+ENV PYTHONPATH="/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/:${PYTHONPATH}"
 
 WORKDIR /app
 
-#COPY docking_parameters.json /app/ 
-#COPY test_files/1za1_D/1za1_D.pdb /data/
-#COPY test_files/1za1_D/CTP_ideal.sdf /data/
 COPY run_all.sh /app/
 COPY run_docking.py /app/ 
-#COPY README.md /app/
 
 #RUN chmod +x /app/run_all.sh
 
