@@ -43,13 +43,14 @@ def convert_to_pdb(input_file, output_file):
     subprocess.run(cmd, check=True)
 
 
-def read_json(json_file):
+def read_json(json_file, data_path=DATA_PATH, work_path=WORK_PATH):
+    data = {}
     with open(json_file, 'r') as f:
         data = json.load(f)
     
-    receptor = os.path.join(DATA_PATH, data["receptor"])
-    ligand = os.path.join(DATA_PATH, data["ligand"])
-    output = os.path.join(WORK_PATH, data["output"])
+    receptor = os.path.join(data_path, data["receptor"])
+    ligand = os.path.join(data_path, data["ligand"])
+    output = os.path.join(work_path, data["output"])
     
     center_x = data["center"]["x"]
     center_y = data["center"]["y"]
@@ -73,7 +74,7 @@ def create_zip(files, zip_filename):
     print(f"Saving to: {zip_filename}")
 
 
-def run_docking(json_file):
+def run_docking(json_file, data_path=DATA_PATH, work_path=WORK_PATH, output_folder="output"):
     receptor, ligand, output, center_x, center_y, center_z, size_x, size_y, size_z = read_json(json_file)
 
     receptor = check_file_exists(receptor)
@@ -84,7 +85,7 @@ def run_docking(json_file):
     if ext.lower() == '.pdb':
         # Convert receptor file to file with aminoacid sequence format only
         _, tail = os.path.split(receptor)
-        receptor_aux = os.path.join(WORK_PATH, tail)
+        receptor_aux = os.path.join(work_path, tail)
         shutil.copy2(receptor, receptor_aux)
         filtered_receptor = receptor_aux.replace(".pdb", "_filtered.pdb")
         filter_pdb(receptor_aux, filtered_receptor) 
@@ -115,6 +116,9 @@ def run_docking(json_file):
     else:
         raise ValueError("Unsupported ligand file format: " + ext)
     
+    # Create output folder
+    os.makedirs(os.path.dirname(output), exist_ok=True)
+
     # Run AutoDock Vina
     vina_cmd = [
         'vina',
@@ -130,9 +134,9 @@ def run_docking(json_file):
     ]
     subprocess.run(vina_cmd, check=True)
 
-    output_folder = os.path.join(DATA_PATH, "output")
-    os.makedirs(output_folder, exist_ok=True)
-    zip_filename = os.path.join(output_folder, "results.zip")
+    output_folder_full = os.path.join(data_path, output_folder)
+    os.makedirs(output_folder_full, exist_ok=True)
+    zip_filename = os.path.join(output_folder_full, "results.zip")
     files_to_zip = [output, receptor, ligand]  # ligand added to gzip
     create_zip(files_to_zip, zip_filename)
 
