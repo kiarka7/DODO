@@ -4,11 +4,57 @@ import json
 import sys
 import zipfile
 import shutil
+from Bio.PDB import MMCIFParser, Select, MMCIFIO
 
 MGLTOOLS_LIB_PATH = '/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs'
 MGLTOOLS_BIN_PATH = '/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/AutoDockTools/Utilities24/'
 DATA_PATH = "/data/"
 WORK_PATH ="/tmp/"
+
+class MySelect(Select):
+    def accept_residue(self, residue):
+        return residue.get_resname() in ["ALA", "CYS", "ASP", "GLU", "PHE", "GLY", "HIS", "ILE", "LYS", "LEU", "MET", "ASN", "PRO", "GLN", "ARG", "SER", "THR", "VAL", "TRP", "TYR"]
+
+def filter_cif_file_biopython(input_cif, output_cif):
+    # TODO: consider keeping STRUCT_CONN category record
+    needed_sections = ['_entry.id', '_cell', '_symmetry']
+    dict_saved_lines = {}
+
+    with open(input_cif, 'r') as file:
+        for line in file:
+            for section in needed_sections:
+                if line.startswith(section):
+                    if dict_saved_lines.get(section) is None:
+                        dict_saved_lines[section] = [line.strip()]
+                    else:
+                        dict_saved_lines[section].append(line.strip())
+
+    parser = MMCIFParser(QUIET=True)
+    structure = parser.get_structure('ID', input_cif)
+    io = MMCIFIO()
+    io.set_structure(structure)
+
+    temp_cif = f"{output_cif}.tmp"
+
+    io.save(temp_cif, select=MySelect())
+
+    with open(temp_cif, 'r') as infile, open(output_cif, 'w') as outfile:
+        # Skip the first two lines (to remove data_ID and #)
+        for _ in range(2):
+            next(infile)
+
+        outfile.write("data_ID\n# \n")
+
+        # Now, write the saved lines back to the top of the file
+        for key, value in dict_saved_lines.items():
+            for line in value:
+                outfile.write(line + "\n")
+            outfile.write("# \n")
+        
+        # Write the remaining lines to the new file
+        outfile.writelines(infile)
+    
+    os.remove(temp_cif)
 
 def filter_pdb(input_pdb, output_pdb):
     with open(input_pdb, 'r') as f_in, open(output_pdb, 'w') as f_out:
@@ -80,10 +126,16 @@ def run_docking(json_file, data_path=DATA_PATH, work_path=WORK_PATH, output_fold
     receptor = check_file_exists(receptor)
     ligand = check_file_exists(ligand)
     
-    # Convert receptor if it's not in pdbqt format
+    # Convert receptor to file with aminoacid sequence format only
     base, ext = os.path.splitext(receptor)
-    if ext.lower() == '.pdb':
-        # Convert receptor file to file with aminoacid sequence format only
+    if ext.lower() == '.cif':
+        print(f"Cleaning CIF file {receptor} with Biopython...")
+        filtered_cif = base + "_filtered.cif"
+        filter_cif_file_biopython(receptor, filtered_cif)
+        receptor = filtered_cif
+        print(f"Cleaned CIF saved to {filtered_cif}")
+
+    elif ext.lower() == '.pdb':
         _, tail = os.path.split(receptor)
         receptor_aux = os.path.join(work_path, tail)
         shutil.copy2(receptor, receptor_aux)
@@ -91,10 +143,13 @@ def run_docking(json_file, data_path=DATA_PATH, work_path=WORK_PATH, output_fold
         filter_pdb(receptor_aux, filtered_receptor) 
         receptor = filtered_receptor
 
-        receptor_pdbqt = os.path.abspath(base + '.pdbqt')
-        prepare_receptor(receptor, receptor_pdbqt)
-        check_file_exists(receptor_pdbqt)
-        receptor = receptor_pdbqt
+    else:
+        raise ValueError("Unsupported receptor file format: " + ext)
+    
+    receptor_pdbqt = os.path.abspath(base + '.pdbqt')
+    prepare_receptor(receptor, receptor_pdbqt)
+    check_file_exists(receptor_pdbqt)
+    receptor = receptor_pdbqt
 
     # Convert ligand if it's not in pdbqt format
     ##### FIXED duplicities

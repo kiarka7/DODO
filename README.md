@@ -34,11 +34,11 @@ The outputs will be stored in a zip file in the mapped directory.
 
 ### Ligand Preparation
 
-Acceptable formats for the ligand are SMILES `.smi`, `.mol2`, `.sdf`, and `.pdb`. The script will automatically convert the `.smi`, `.mol2`, `.sdf` format to `.pdb`. If your ligand is already in the `.pdb` format, the script uses that one directly. Subsequently, the `.pdb` file is converted to `.pdbqt` using Autodock Tools' [`prepare_ligand4.py`](https://github.com/sahrendt0/Scripts/blob/master/docking_scripts/prepare_ligand4.py). 
+Acceptable formats for the ligand are SMILES `.smi`, `.mol2`, `.sdf`, and `.pdb`. The script will automatically convert the `.smi`, `.mol2`, `.sdf` format to `.pdb`. If your ligand is already in the `.pdb` format, the script uses that one directly. Subsequently, the `.pdb` file is converted to `.pdbqt` using Autodock Tools' [`prepare_ligand4.py`](https://github.com/sahrendt0/Scripts/blob/master/docking_scripts/prepare_ligand4.py).
 
 ### Receptor Preparation
 
-Acceptable format for the receptor is `.pdb`. The receptor is prepared using Autodock Tools' [`prepare_receptor4.py`](https://github.com/sahrendt0/Scripts/blob/master/docking_scripts/prepare_receptor4.py). Currently, it is possible to upload a receptor that contains atoms other than amino acids, especially crystal waters, ions, and compounds assisting crystallization. 
+Acceptable formats for the receptor are `.pdb` and `.cif`. The receptor is prepared using Autodock Tools' [`prepare_receptor4.py`](https://github.com/sahrendt0/Scripts/blob/master/docking_scripts/prepare_receptor4.py). Currently, it is possible to upload a receptor that contains atoms other than amino acids, especially crystal waters, ions, and compounds assisting crystallization.
 
 ### Docking with AutoDock Vina
 

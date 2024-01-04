@@ -1,4 +1,5 @@
-FROM ubuntu:23.10
+# stage 1 - preparing the ubuntu image, downloading + installing all packages
+FROM ubuntu:23.10 AS base
 
 # to prevent apt-get install from asking questions
 ARG DEBIAN_FRONTEND=noninteractive
@@ -24,7 +25,8 @@ RUN apt-get update && \
     libexpat1-dev \
     liblzma-dev \
     tk-dev \
-    libffi-dev
+    libffi-dev \
+    python3-biopython
 
 RUN wget https://www.python.org/ftp/python/2.7.18/Python-2.7.18.tgz && \
     tar xzf Python-2.7.18.tgz && \
@@ -51,8 +53,14 @@ RUN curl -L -o mgltools_x86_64Linux2_1.5.7p1.tar.gz https://ccsb.scripps.edu/mgl
     tar -xzf /opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs.tar.gz -C /opt/mgltools_x86_64Linux2_1.5.7/ && \
     rm /opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs.tar.gz
 
+# stage 2 - all packages have been downloaded
+FROM base as final
+
 ENV PATH="/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/AutoDockTools/Utilities24/:${PATH}"
 ENV PYTHONPATH="/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/:${PYTHONPATH}"
+
+# a workaround for a bug in MGLTools
+RUN sed -i 's/^        parser = MMCIFParser(filename, modelsAs=modelsAs)$/        parser = MMCIFParser(filename)/' /opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/MolKit/__init__.py
 
 WORKDIR /app
 
