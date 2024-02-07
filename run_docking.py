@@ -126,23 +126,20 @@ def run_docking(json_file, data_path=DATA_PATH, work_path=WORK_PATH, output_fold
     
     # Convert receptor to file with aminoacid sequence format only
     base, ext = os.path.splitext(receptor)
-    if ext.lower() == '.cif':
-        print(f"Cleaning CIF file {receptor} with Biopython...")
+    print(f"Cleaning receptor file {receptor} ...")
+
+    if ext.lower() == ".cif":
         filtered_receptor = base + "_filtered.cif"
         filter_cif_file_biopython(receptor, filtered_receptor)
-        receptor = filtered_receptor
-        print(f"Cleaned CIF saved to {filtered_receptor}")
-
-    elif ext.lower() == '.pdb':
-        print(f"Cleaning PDB file {receptor} ...")
+    elif ext.lower() == ".pdb":
         filtered_receptor = base + "_filtered.pdb"
-        filter_pdb(receptor, filtered_receptor) 
-        receptor = filtered_receptor
-        print(f"Cleaned PDB saved to {filtered_receptor}")
-
+        filter_pdb(receptor, filtered_receptor)
     else:
         raise ValueError("Unsupported receptor file format: " + ext)
     
+    receptor = filtered_receptor
+    print(f"Cleaned receptor saved to {receptor}")
+
     receptor_pdbqt = os.path.abspath(base + '.pdbqt')
     prepare_receptor(receptor, receptor_pdbqt)
     check_file_exists(receptor_pdbqt)
