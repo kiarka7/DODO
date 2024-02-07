@@ -62,8 +62,6 @@ def filter_pdb(input_pdb, output_pdb):
             if line.startswith("ATOM"):
                 f_out.write(line)
 
-    print(f"Filtered PDB saved to {output_pdb}")
-
 def prepare_receptor(pdb_file, pdbqt_file):
     cmd = ["/usr/local/bin/python2.7", os.path.join(MGLTOOLS_BIN_PATH, 'prepare_receptor4.py'), '-r', pdb_file, '-o', pdbqt_file]
     subprocess.run(cmd, check=True)
@@ -128,24 +126,20 @@ def run_docking(json_file, data_path=DATA_PATH, work_path=WORK_PATH, output_fold
     
     # Convert receptor to file with aminoacid sequence format only
     base, ext = os.path.splitext(receptor)
-    if ext.lower() == '.cif':
-        print(f"Cleaning CIF file {receptor} with Biopython...")
-        filtered_cif = base + "_filtered.cif"
-        filter_cif_file_biopython(receptor, filtered_cif)
-        receptor = filtered_cif
-        print(f"Cleaned CIF saved to {filtered_cif}")
+    print(f"Cleaning receptor file {receptor} ...")
 
-    elif ext.lower() == '.pdb':
-        _, tail = os.path.split(receptor)
-        receptor_aux = os.path.join(work_path, tail)
-        shutil.copy2(receptor, receptor_aux)
-        filtered_receptor = receptor_aux.replace(".pdb", "_filtered.pdb")
-        filter_pdb(receptor_aux, filtered_receptor) 
-        receptor = filtered_receptor
-
+    if ext.lower() == ".cif":
+        filtered_receptor = base + "_filtered.cif"
+        filter_cif_file_biopython(receptor, filtered_receptor)
+    elif ext.lower() == ".pdb":
+        filtered_receptor = base + "_filtered.pdb"
+        filter_pdb(receptor, filtered_receptor)
     else:
         raise ValueError("Unsupported receptor file format: " + ext)
     
+    receptor = filtered_receptor
+    print(f"Cleaned receptor saved to {receptor}")
+
     receptor_pdbqt = os.path.abspath(base + '.pdbqt')
     prepare_receptor(receptor, receptor_pdbqt)
     check_file_exists(receptor_pdbqt)
