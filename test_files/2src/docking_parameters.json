@@ -1,6 +1,6 @@
 {
-  "receptor": "random_receptor.pdb",
-  "ligand": "atp_ideal.smi",
+  "receptor": "2src.pdb",
+  "ligand": "atp.smi",
   "output": "output.pdbqt",
   "center": {
     "x": 40.0,
@@ -14,3 +14,5 @@
   },
   "exhaustiveness": 32
 }
+
+  

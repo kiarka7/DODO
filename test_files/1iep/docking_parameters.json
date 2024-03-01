@@ -1,0 +1,18 @@
+{
+  "receptor": "1iep_receptorH.pdb",
+  "ligand": "1iep_ligand.sdf",
+  "output": "output.pdbqt",
+  "center": {
+    "x": 15.190,
+    "y": 53.903,
+    "z": 16.917
+  },
+  "size": {
+    "x": 20.0,
+    "y": 20.0,
+    "z": 20.0
+  },
+  "exhaustiveness": 32
+}
+
+  

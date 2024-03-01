@@ -1,5 +1,5 @@
 {
-  "receptor": "1za1_D.pdb",
+  "receptor": "1za1.pdb",
   "ligand": "CTP_ideal.sdf",
   "output": "output.pdbqt",
   "center": {

@@ -13,7 +13,7 @@ WORK_PATH ="/tmp/"
 
 class MySelect(Select):
     def accept_residue(self, residue):
-        return residue.get_resname() in ["ALA", "CYS", "ASP", "GLU", "PHE", "GLY", "HIS", "ILE", "LYS", "LEU", "MET", "ASN", "PRO", "GLN", "ARG", "SER", "THR", "VAL", "TRP", "TYR"]
+        return residue.get_resname() in ["ALA", "CYS", "ASP", "GLU", "PHE", "GLY", "HIS", "ILE", "LYS", "LEU", "MET", "ASN", "PRO", "GLN", "ARG", "SER", "THR", "VAL", "TRP", "TYR", "HID", "HSP", "HIE", "HIP", "CYX", "CSS"]
 
 def filter_cif_file_biopython(input_cif, output_cif):
     # TODO: consider keeping STRUCT_CONN category record
@@ -56,14 +56,37 @@ def filter_cif_file_biopython(input_cif, output_cif):
     
     os.remove(temp_cif)
 
+def is_sequence_adjacent(line, atom_records):
+    # TODO: the constants are a bit cryptic, consider using named constants
+    current_seq_num = int(line[22:26].strip())
+    current_chain = line[21].strip()
+
+    for record in atom_records:
+        record_seq_num = int(record[22:26].strip())
+        record_chain = record[21].strip()
+        if current_chain == record_chain and abs(current_seq_num - record_seq_num) == 1:
+            return True
+
+    return False
+
 def filter_pdb(input_pdb, output_pdb):
-    with open(input_pdb, 'r') as f_in, open(output_pdb, 'w') as f_out:
+    with open(input_pdb, 'r') as f_in, open(output_pdb, 'w') as f_filtered_out:
+        writing_hetatm = False
         for line in f_in:
             if line.startswith("ATOM"):
-                f_out.write(line)
+                f_filtered_out.write(line)
+                writing_hetatm = True 
+            elif line.startswith("HETATM") and writing_hetatm:
+                modified_line = "ATOM  " + line[6:]
+                f_filtered_out.write(modified_line)
+            elif line.startswith("TER") or line.startswith("END"):
+                writing_hetatm = False
+                break 
+
+    print(f"Filtered PDB for inspection saved to {output_pdb}")
 
 def prepare_receptor(pdb_file, pdbqt_file):
-    cmd = ["/usr/local/bin/python2.7", os.path.join(MGLTOOLS_BIN_PATH, 'prepare_receptor4.py'), '-r', pdb_file, '-o', pdbqt_file]
+    cmd = ["/usr/local/bin/python2.7", os.path.join(MGLTOOLS_BIN_PATH, 'prepare_receptor4.py'),'-A', "hydrogens",'-U', "nphs _lps_waters_deleteAltB",'-r', pdb_file, '-o', pdbqt_file]
     subprocess.run(cmd, check=True)
 
 def prepare_ligand(input_file, output_file):
@@ -95,16 +118,18 @@ def read_json(json_file, data_path=DATA_PATH, work_path=WORK_PATH):
     receptor = os.path.join(data_path, data["receptor"])
     ligand = os.path.join(data_path, data["ligand"])
     output = os.path.join(work_path, data["output"])
-    
+
     center_x = data["center"]["x"]
     center_y = data["center"]["y"]
     center_z = data["center"]["z"]
-    
+
     size_x = data["size"]["x"]
     size_y = data["size"]["y"]
     size_z = data["size"]["z"]
-    
-    return receptor, ligand, output, center_x, center_y, center_z, size_x, size_y, size_z
+
+    exhaustiveness = data["exhaustiveness"]  
+
+    return receptor, ligand, output, center_x, center_y, center_z, size_x, size_y, size_z, exhaustiveness
 
 def check_file_exists(filename):
     if not os.path.exists(filename):
@@ -119,7 +144,7 @@ def create_zip(files, zip_filename):
 
 
 def run_docking(json_file, data_path=DATA_PATH, work_path=WORK_PATH, output_folder="output"):
-    receptor, ligand, output, center_x, center_y, center_z, size_x, size_y, size_z = read_json(json_file)
+    receptor, ligand, output, center_x, center_y, center_z, size_x, size_y, size_z, exhaustiveness = read_json(json_file)
 
     receptor = check_file_exists(receptor)
     ligand = check_file_exists(ligand)
@@ -180,6 +205,7 @@ def run_docking(json_file, data_path=DATA_PATH, work_path=WORK_PATH, output_fold
         '--size_x', str(size_x),
         '--size_y', str(size_y),
         '--size_z', str(size_z),
+        '--exhaustiveness', str(exhaustiveness)
     ]
     subprocess.run(vina_cmd, check=True)
 
