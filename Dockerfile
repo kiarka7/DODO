@@ -1,5 +1,5 @@
 # stage 1 - preparing the ubuntu image, downloading + installing all packages
-FROM ubuntu:23.10 AS base
+FROM ubuntu:24.10 AS base
 
 # to prevent apt-get install from asking questions
 ARG DEBIAN_FRONTEND=noninteractive
