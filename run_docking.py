@@ -4,12 +4,17 @@ import json
 import sys
 import zipfile
 import shutil
-from Bio.PDB import MMCIFParser, Select, MMCIFIO
+from Bio.PDB.MMCIFParser import MMCIFParser
+from Bio.PDB.mmcifio import MMCIFIO
+from Bio.PDB.PDBIO import Select
 
 MGLTOOLS_LIB_PATH = '/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs'
 MGLTOOLS_BIN_PATH = '/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/AutoDockTools/Utilities24/'
 DATA_PATH = "/data/"
 WORK_PATH ="/tmp/"
+
+PREPARATION_TIMEOUT_SECONDS = 300
+DOCKING_TIMEOUT_SECONDS = 900
 
 class MySelect(Select):
     def accept_residue(self, residue):
@@ -62,20 +67,26 @@ def filter_pdb(input_pdb, output_pdb):
             if line.startswith("ATOM"):
                 f_out.write(line)
 
-def prepare_receptor(pdb_file, pdbqt_file):
+def prepare_receptor(pdb_file, pdbqt_file, use_timeout):
     cmd = ["/usr/local/bin/python2.7", os.path.join(MGLTOOLS_BIN_PATH, 'prepare_receptor4.py'), '-r', pdb_file, '-o', pdbqt_file]
-    subprocess.run(cmd, check=True)
+    if use_timeout:
+        subprocess.run(cmd, check=True, timeout=PREPARATION_TIMEOUT_SECONDS)
+    else:
+        subprocess.run(cmd, check=True)
 
-def prepare_ligand(input_file, output_file):
+def prepare_ligand(input_file, output_file, use_timeout):
     cmd = ["/usr/local/bin/python2.7", os.path.join(MGLTOOLS_BIN_PATH, 'prepare_ligand4.py'), '-l', input_file, '-o', output_file]
     current_directory = os.getcwd()
     os.chdir(WORK_PATH)
     try:
-        subprocess.run(cmd, check=True)
+        if use_timeout:
+            subprocess.run(cmd, check=True, timeout=PREPARATION_TIMEOUT_SECONDS)
+        else:
+            subprocess.run(cmd, check=True)
     finally:
         os.chdir(current_directory)
 
-def convert_to_pdb(input_file, output_file):
+def convert_to_pdb(input_file, output_file, use_timeout):
     _, ext = os.path.splitext(input_file)
     
     ext_lower = ext.lower()
@@ -84,7 +95,10 @@ def convert_to_pdb(input_file, output_file):
     else:
         raise ValueError(f"Unsupported input format for conversion: {ext}")
     cmd = ["obabel", "-i", input_format, input_file, "-o", "pdb", "-O", output_file, "--gen3d"]
-    subprocess.run(cmd, check=True)
+    if use_timeout:
+        subprocess.run(cmd, check=True, timeout=PREPARATION_TIMEOUT_SECONDS)
+    else:
+        subprocess.run(cmd, check=True)
 
 
 def read_json(json_file, data_path=DATA_PATH, work_path=WORK_PATH):
@@ -118,7 +132,7 @@ def create_zip(files, zip_filename):
     print(f"Saving to: {zip_filename}")
 
 
-def run_docking(json_file, data_path=DATA_PATH, work_path=WORK_PATH, output_folder="output"):
+def run_docking(json_file, data_path=DATA_PATH, work_path=WORK_PATH, output_folder="output", use_timeout=True):
     receptor, ligand, output, center_x, center_y, center_z, size_x, size_y, size_z = read_json(json_file)
 
     receptor = check_file_exists(receptor)
@@ -141,7 +155,7 @@ def run_docking(json_file, data_path=DATA_PATH, work_path=WORK_PATH, output_fold
     print(f"Cleaned receptor saved to {receptor}")
 
     receptor_pdbqt = os.path.abspath(base + '.pdbqt')
-    prepare_receptor(receptor, receptor_pdbqt)
+    prepare_receptor(receptor, receptor_pdbqt, use_timeout)
     check_file_exists(receptor_pdbqt)
     receptor = receptor_pdbqt
 
@@ -154,12 +168,12 @@ def run_docking(json_file, data_path=DATA_PATH, work_path=WORK_PATH, output_fold
         ligand_pdb = os.path.join(WORK_PATH, tail.replace(ext, '.pdb'))
         if ext_lower != '.pdb':
             print(f"Converting {ligand} to {ligand_pdb} ...")
-            convert_to_pdb(ligand, ligand_pdb)
+            convert_to_pdb(ligand, ligand_pdb, use_timeout)
             check_file_exists(ligand_pdb)
         ligand_pdbqt = os.path.join(WORK_PATH, tail.replace(ext, '.pdbqt'))
         #ligand_pdbqt = os.path.abspath(f'{WORK_DIR}{base}.pdbqt')
         print(f"Converting {ligand} to {ligand_pdbqt} ...")
-        prepare_ligand(ligand_pdb, ligand_pdbqt)
+        prepare_ligand(ligand_pdb, ligand_pdbqt, use_timeout)
         check_file_exists(ligand_pdbqt)
         ligand = ligand_pdbqt
     else:
@@ -181,7 +195,12 @@ def run_docking(json_file, data_path=DATA_PATH, work_path=WORK_PATH, output_fold
         '--size_y', str(size_y),
         '--size_z', str(size_z),
     ]
-    subprocess.run(vina_cmd, check=True)
+    if use_timeout:
+        print(f"Running AutoDock Vina with timeout of {DOCKING_TIMEOUT_SECONDS} seconds ...")
+        subprocess.run(vina_cmd, check=True, timeout=DOCKING_TIMEOUT_SECONDS)
+    else:
+        print("Running AutoDock Vina ...")
+        subprocess.run(vina_cmd, check=True)
 
     output_folder_full = os.path.join(data_path, output_folder)
     os.makedirs(output_folder_full, exist_ok=True)
@@ -196,4 +215,4 @@ if __name__ == '__main__':
         print("Usage: python3 docking_script.py path_to_json_file")
         sys.exit(1)
     json_file = sys.argv[1]
-    run_docking(json_file)
+    run_docking(json_file, use_timeout=False)
