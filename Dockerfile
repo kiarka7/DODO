@@ -54,7 +54,7 @@ RUN curl -L -o mgltools_x86_64Linux2_1.5.7p1.tar.gz https://ccsb.scripps.edu/mgl
     rm /opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs.tar.gz
 
 # stage 2 - all packages have been downloaded
-FROM base as final
+FROM base AS final
 
 ENV PATH="/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/AutoDockTools/Utilities24/:${PATH}"
 ENV PYTHONPATH="/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/:${PYTHONPATH}"
