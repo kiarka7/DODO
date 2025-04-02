@@ -172,7 +172,9 @@ def read_json(json_file, data_path=DATA_PATH, work_path=WORK_PATH):
     size_y = data["size"]["y"]
     size_z = data["size"]["z"]
 
-    return receptor, ligand, output, center_x, center_y, center_z, size_x, size_y, size_z
+    exhaustiveness = data.get("exhaustiveness", 32)
+
+    return receptor, ligand, output, center_x, center_y, center_z, size_x, size_y, size_z, exhaustiveness
 
 def check_file_exists(filename):
     if not os.path.exists(filename):
@@ -276,7 +278,7 @@ def prepare_ligand_with_fallback(input_file, original_smiles_file, output_file):
 # Main workflow
 # ---------------------------
 def run_docking(json_file, data_path=DATA_PATH, work_path=WORK_PATH, output_folder="output", use_timeout=True):
-    receptor, ligand, output, center_x, center_y, center_z, size_x, size_y, size_z = read_json(json_file)
+    receptor, ligand, output, center_x, center_y, center_z, size_x, size_y, size_z, exhaustiveness = read_json(json_file)
     receptor = check_file_exists(receptor)
     ligand = check_file_exists(ligand)
     
@@ -346,6 +348,7 @@ def run_docking(json_file, data_path=DATA_PATH, work_path=WORK_PATH, output_fold
         '--size_x', str(size_x),
         '--size_y', str(size_y),
         '--size_z', str(size_z),
+        '--exhaustiveness', str(exhaustiveness),
     ]
     if use_timeout:
         print(f"Running AutoDock Vina with timeout of {DOCKING_TIMEOUT_SECONDS} seconds ...")
