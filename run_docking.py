@@ -347,7 +347,12 @@ def run_docking(json_file, data_path=DATA_PATH, work_path=WORK_PATH, output_fold
         '--size_y', str(size_y),
         '--size_z', str(size_z),
     ]
-    subprocess.run(vina_cmd, check=True, timeout=DOCKING_TIMEOUT_SECONDS)
+    if use_timeout:
+        print(f"Running AutoDock Vina with timeout of {DOCKING_TIMEOUT_SECONDS} seconds ...")
+        subprocess.run(vina_cmd, check=True, timeout=DOCKING_TIMEOUT_SECONDS)
+    else:
+        print("Running AutoDock Vina ...")
+        subprocess.run(vina_cmd, check=True)
 
     output_folder_full = os.path.join(data_path, output_folder)
     os.makedirs(output_folder_full, exist_ok=True)
