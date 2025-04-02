@@ -26,7 +26,9 @@ RUN apt-get update && \
     liblzma-dev \
     tk-dev \
     libffi-dev \
-    python3-biopython
+    python3-biopython \
+    python3-rdkit \
+    rdkit-data
 
 RUN wget https://www.python.org/ftp/python/2.7.18/Python-2.7.18.tgz && \
     tar xzf Python-2.7.18.tgz && \
@@ -40,11 +42,9 @@ RUN curl https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py && \
 
 RUN python2.7 -m pip install numpy
 
-RUN wget -q https://vina.scripps.edu/wp-content/uploads/sites/55/2020/12/autodock_vina_1_1_2_linux_x86.tgz && \
-    tar -xzvf autodock_vina_1_1_2_linux_x86.tgz && \
-    rm autodock_vina_1_1_2_linux_x86.tgz && \
-    mv autodock_vina_1_1_2_linux_x86 /opt/vina && \
-    ln -s /opt/vina/bin/vina /usr/local/bin/vina
+RUN wget -q https://github.com/ccsb-scripps/AutoDock-Vina/releases/download/v1.2.5/vina_1.2.5_linux_x86_64 -O /opt/vina_1.2.5_linux_x86_64 && \
+    chmod +x /opt/vina_1.2.5_linux_x86_64 && \
+    ln -sf /opt/vina_1.2.5_linux_x86_64 /usr/local/bin/vina
 
 RUN curl -L -o mgltools_x86_64Linux2_1.5.7p1.tar.gz https://ccsb.scripps.edu/mgltools/download/491/ && \
     tar -xzf mgltools_x86_64Linux2_1.5.7p1.tar.gz && \
@@ -54,7 +54,7 @@ RUN curl -L -o mgltools_x86_64Linux2_1.5.7p1.tar.gz https://ccsb.scripps.edu/mgl
     rm /opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs.tar.gz
 
 # stage 2 - all packages have been downloaded
-FROM base as final
+FROM base AS final
 
 ENV PATH="/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/AutoDockTools/Utilities24/:${PATH}"
 ENV PYTHONPATH="/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/:${PYTHONPATH}"
